@@ -223,8 +223,8 @@ class ConvLSTMNetwork(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using {device} device")
 
-# Load the model and switch it to the correct device
-model = torch.load('dxball_model.pt')
+# Load the model on device and switch it to the correct device
+model = torch.load('dxball_model.pt', map_location=torch.device(device))
 model = model.to(device)
 model.eval()
 
