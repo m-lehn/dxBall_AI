@@ -43,7 +43,7 @@ class Ball(pygame.sprite.Sprite):
         self.spX, self.spY = -4, 4
         self.onPlate = 0
         self.plate = plate
-		# Set the initial position of the ball - often starting on or just above the paddle
+        # Set the initial position of the ball - often starting on or just above the paddle
         self.rect.centerx = self.plate.rect.centerx
         self.rect.bottom = self.plate.rect.top - 1  # Position the ball just above the paddle
 
@@ -110,7 +110,7 @@ class Game:
     def initialize_frame_count(self):
         # List all files in the directory
         files = os.listdir(self.frame_directory)
-        jpg_files = [f for f in files if f.endswith('.jpg')]
+        jpg_files = [f for f in files if f.endswith('.png')]
 
         if jpg_files:
             # Extract numbers from filenames and find the maximum
@@ -151,15 +151,21 @@ class Game:
 
     def save_frame(self):
         self.frame_count += 1
-        frame_filename = os.path.join(self.frame_directory, f"{self.frame_count:06d}.jpg")
+        frame_filename = os.path.join(self.frame_directory, f"{self.frame_count:06d}.png")
         # Get the current screen size
         current_size = self.screen.get_size()
         # Reduce the width and height
         new_size = (current_size[0] // 5, current_size[1] // 5)
         # Resize the surface
         resized_surface = pygame.transform.scale(self.screen, new_size)
-        # Save the current screen as an image
-        pygame.image.save(resized_surface, frame_filename)
+        # Convert Pygame surface to a string buffer (RGB format)
+        surface_data = pygame.image.tostring(resized_surface, "RGB")
+        # Create a Pillow image from the string buffer
+        img = Image.frombytes("RGB", new_size, surface_data)
+        # Convert to grayscale
+        img = img.convert("1")  # Converts the image to binary
+        # Save the processed image
+        img.save(frame_filename, format="PNG")
 
     def run(self):
         while self.running:
