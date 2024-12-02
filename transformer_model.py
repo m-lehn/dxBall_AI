@@ -100,7 +100,7 @@ class TransformerEncoder(nn.Module):
         return self.ln(x)  # Final layer normalization
 
 class FramePredictor(nn.Module):
-    def __init__(self, seq_size=10, img_size=50, patch_size=10, dim=128, depth=4, heads=4):
+    def __init__(self, seq_size=5, img_size=50, patch_size=10, dim=256, depth=4, heads=8):
         super().__init__()
         self.seq_size = seq_size
         self.patch_size = patch_size
@@ -110,11 +110,15 @@ class FramePredictor(nn.Module):
         # Patch embedding
         self.embedding = nn.Conv2d(seq_size, dim, kernel_size=patch_size, stride=patch_size)
 
+        # Learnable positional encoding
+        self.positional_encoding = nn.Parameter(torch.randn(1, self.num_patches, dim))
+
         # Transformer encoder
         self.encoder = TransformerEncoder(dim, depth, heads)
 
         # Output projection
         self.to_image = nn.ConvTranspose2d(dim, 1, kernel_size=patch_size, stride=patch_size)
+        #self.to_image = nn.Conv2d(dim, 1, kernel_size=1)
 
     def forward(self, x):
         """
@@ -131,6 +135,9 @@ class FramePredictor(nn.Module):
         # Flatten patches and prepare for Transformer
         num_patches = x.size(2) * x.size(3)  # Total number of patches
         x = x.flatten(2).transpose(1, 2)  # [batch_size, num_patches, dim]
+
+        # Add positional encoding
+        x = x + self.positional_encoding  # [batch_size, num_patches, dim]
 
         # Pass through Transformer encoder
         x = self.encoder(x)  # [batch_size, num_patches, dim]
