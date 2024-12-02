@@ -31,8 +31,8 @@ parser.add_argument('--model_path', type=str, required=True, help="Path to the s
 args = parser.parse_args()
 
 # Load the model and switch it to the correct device
-model = torch.load(args.model_path)
-model = model.to(device)
+model = torch.load(args.model_path, map_location=device)
+#model = model.to(device)
 model.eval()
 
 # Transform for new frame to tensor and normalization
